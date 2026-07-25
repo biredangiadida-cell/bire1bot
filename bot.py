@@ -1,68 +1,128 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+# Telegram Registration & Payment Bot
+# Python Telegram Bot v22.8
+# Works on Termux and Railway
+
+import os
+import json
+
+from telegram import (
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup
+)
+
 from telegram.ext import (
     Application,
     CommandHandler,
+    MessageHandler,
     CallbackQueryHandler,
     ContextTypes,
-    MessageHandler,
     filters
 )
 
-TOKEN = "8665819961:AAH1RHRR-wY8i5k7EnVe62-cbmR5KqzCSyQ"
-ADMIN_ID = 123456789  # Telegram ID kee as galchi
 
-users = {}
+# ================= CONFIG =================
 
+BOT_TOKEN = "8665819961:AAEGEgdg8XuvSSe1FyRxKgcn4FqgtPMwznY"
+
+ADMIN_ID = 6836792869
+
+PAYMENT_AMOUNT = 200
+TELEBIRR = "0982485937"
+CBE = "1000291766734"
+
+DATA_FILE = "members.json"
+
+
+# ================= DATABASE =================
+
+def load_members():
+    try:
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+
+def save_members(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+
+members = load_members()
+
+
+# ================= START =================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = [
-        [InlineKeyboardButton("📝 Galmaa'i", callback_data="register")],
-        [InlineKeyboardButton("💳 Kaffaltii", callback_data="payment")],
-        [InlineKeyboardButton("👤 Account Koo", callback_data="account")],
-        [InlineKeyboardButton("📞 Nu Qunnamaa", callback_data="contact")]
+        [InlineKeyboardButton("📝 Galmaa'i", callback_data="register")]
     ]
 
     await update.message.reply_text(
-        "🎉 Baga Nagaan Gara *BIRE ONLINE IKUB* dhuftan!\n\n"
-        "👇 Tajaajila barbaaddu filadhu.",
-        reply_markup=InlineKeyboardMarkup(keyboard),
-        parse_mode="Markdown"
+        "👋 Baga nagaan dhuftan.\n\n"
+        "Kaffaltiin miseensummaa: 200 ETB\n"
+        "Galmaa'uuf button armaan gadii cuqaasi.",
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ================= BUTTONS =================
+
+async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     query = update.callback_query
     await query.answer()
 
     if query.data == "register":
+
         context.user_data["step"] = "name"
-        await query.edit_message_text(
-            "📝 Maqaa kee barreessi."
-        )
 
-    elif query.data == "payment":
         await query.edit_message_text(
-            "💳 Kaffaltii:\n\n"
-            "Telebirr: 0982485937\n"
-            "CBE: 1000291766734"
-        )
-
-    elif query.data == "account":
-        await query.edit_message_text(
-            "👤 Account kee yeroo dhihootti ni jiraata."
-        )
-
-    elif query.data == "contact":
-        await query.edit_message_text(
-            "📞 Telegram: @bireikub"
+            "📝 Maqaa kee barreessi:"
         )
 
 
-async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    elif query.data.startswith("approve_"):
+
+        user_id = query.data.split("_")[1]
+
+        if str(user_id) in members:
+
+            members[str(user_id)]["approved"] = True
+            save_members(members)
+
+            await query.edit_message_text(
+                "✅ Miseensummaan mirkanaa'e."
+            )
+
+            await context.bot.send_message(
+                chat_id=int(user_id),
+                text="🎉 Kaffaltiin kee mirkanaa'e. Miseensa taate!"
+            )
+
+
+    elif query.data.startswith("reject_"):
+
+        user_id = query.data.split("_")[1]
+
+        await query.edit_message_text(
+            "❌ Kaffaltiin didame."
+        )
+
+        await context.bot.send_message(
+            chat_id=int(user_id),
+            text="❌ Ragaan kaffaltii kee hin fudhatamne."
+        )
+
+
+# ================= REGISTRATION =================
+
+async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     step = context.user_data.get("step")
+
 
     if step == "name":
 
@@ -70,46 +130,187 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["step"] = "phone"
 
         await update.message.reply_text(
-            "📱 Lakkoofsa bilbila kee barreessi."
+            "📱 Lakkoofsa bilbila kee barreessi:"
         )
 
 
     elif step == "phone":
 
-        name = context.user_data["name"]
-        phone = update.message.text
-
-        users[update.message.chat_id] = {
-            "name": name,
-            "phone": phone
-        }
+        context.user_data["phone"] = update.message.text
+        context.user_data["step"] = "payment"
 
         await update.message.reply_text(
-            "✅ Galmeen kee milkaa'inaan xumurame!\n\n"
-            f"👤 Maqaa: {name}\n"
-            f"📱 Bilbila: {phone}"
+            f"💳 Kaffaltii: {PAYMENT_AMOUNT} ETB\n\n"
+            f"Telebirr: {TELEBIRR}\n"
+            f"CBE: {CBE}\n\n"
+            "Erga kaffalte booda ragaa (screenshot) ergi."
         )
 
-        await context.bot.send_message(
-            chat_id=ADMIN_ID,
-            text=(
-                "🔔 Galmee Haaraa!\n\n"
-                f"👤 Maqaa: {name}\n"
-                f"📱 Bilbila: {phone}"
+
+# ================= RECEIPT =================
+
+async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if context.user_data.get("step") != "payment":
+        return
+
+
+    user_id = update.message.chat_id
+
+    members[str(user_id)] = {
+        "name": context.user_data.get("name"),
+        "phone": context.user_data.get("phone"),
+        "approved": False
+    }
+
+    save_members(members)
+
+
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "✅ Approve",
+                callback_data=f"approve_{user_id}"
+            ),
+
+            InlineKeyboardButton(
+                "❌ Reject",
+                callback_data=f"reject_{user_id}"
             )
+        ]
+    ]
+
+
+    await update.message.reply_text(
+        "✅ Ragaan kaffaltii ergameera. Eegaa ilaallama."
+    )
+
+
+    await context.bot.send_message(
+        chat_id=ADMIN_ID,
+        text=(
+            "💰 Kaffaltii haaraa\n\n"
+            f"ID: {user_id}\n"
+            f"Maqaa: {members[str(user_id)]['name']}\n"
+            f"Bilbila: {members[str(user_id)]['phone']}"
+        ),
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+
+    await update.message.forward(ADMIN_ID)
+
+
+
+# ================= ADMIN COMMANDS =================
+
+async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if update.message.chat_id != ADMIN_ID:
+        return
+
+    total = len(members)
+
+    approved = len(
+        [
+            x for x in members.values()
+            if x.get("approved")
+        ]
+    )
+
+    await update.message.reply_text(
+        f"📊 Statistics\n\n"
+        f"Total: {total}\n"
+        f"Approved: {approved}"
+    )
+
+
+async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if update.message.chat_id != ADMIN_ID:
+        return
+
+
+    if not context.args:
+
+        await update.message.reply_text(
+            "Fakkeenya:\n/broadcast Ergaa koo"
         )
 
-        context.user_data["step"] = None
+        return
 
 
-app = Application.builder().token(TOKEN).build()
+    message = " ".join(context.args)
 
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CallbackQueryHandler(button))
-app.add_handler(
-    MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler)
-)
+    count = 0
 
-print("🤖 BIRE ONLINE IKUB Bot Started...")
+    for user_id in members:
 
-app.run_polling()
+        try:
+            await context.bot.send_message(
+                chat_id=int(user_id),
+                text=message
+            )
+
+            count += 1
+
+        except:
+            pass
+
+
+    await update.message.reply_text(
+        f"✅ Ergaan nama {count}f ergame."
+    )
+
+
+# ================= MAIN =================
+
+def main():
+
+    app = Application.builder().token(
+        BOT_TOKEN
+    ).build()
+
+
+    app.add_handler(
+        CommandHandler("start", start)
+    )
+
+    app.add_handler(
+        CommandHandler("stats", stats)
+    )
+
+    app.add_handler(
+        CommandHandler("broadcast", broadcast)
+    )
+
+
+    app.add_handler(
+        CallbackQueryHandler(buttons)
+    )
+
+
+    app.add_handler(
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            text_handler
+        )
+    )
+
+
+    app.add_handler(
+        MessageHandler(
+            filters.PHOTO,
+            receipt
+        )
+    )
+
+
+    print("Bot running...")
+
+    app.run_polling()
+
+
+
+if __name__ == "__main__":
+    main()
