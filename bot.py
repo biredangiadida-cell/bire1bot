@@ -3,7 +3,8 @@ import json
 from telegram import (
     Update,
     InlineKeyboardButton,
-    InlineKeyboardMarkup
+    InlineKeyboardMarkup,
+    BotCommand
 )
 
 from telegram.ext import (
@@ -15,9 +16,10 @@ from telegram.ext import (
     filters
 )
 
+
 # ================= CONFIG =================
 
-BOT_TOKEN = "8665819961:AAEGEgdg8XuvSSe1FyRxKgcn4FqgtPMwznY"
+BOT_TOKEN = "TOKEN_KEE_AS_GALCHI"
 
 ADMIN_ID = 6836792869
 
@@ -26,6 +28,7 @@ TELEBIRR = "0982485937"
 CBE = "1000291766734"
 
 DATA_FILE = "members.json"
+
 
 # ================= DATABASE =================
 
@@ -36,27 +39,45 @@ def load_members():
     except:
         return {}
 
+
 def save_members(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
+
 members = load_members()
+
+
+# ================= MENU COMMANDS =================
+
+async def set_commands(app):
+
+    commands = [
+        BotCommand("start", "Jalqabi"),
+        BotCommand("users", "Miseensota ilaali"),
+        BotCommand("stats", "Lakkoofsa ilaali"),
+        BotCommand("broadcast", "Ergaa ergi")
+    ]
+
+    await app.bot.set_my_commands(commands)
+
 
 # ================= START =================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = [
-        [InlineKeyboardButton("📝 Galmaa'i", callback_data="register")]
+        [InlineKeyboardButton(
+            "📝 Galmaa'i",
+            callback_data="register"
+        )]
     ]
 
     await update.message.reply_text(
         "👋 Baga nagaan dhuftan.\n\n"
-        "Kaffaltiin miseensummaa: 200 ETB\n"
+        "💳 Kaffaltiin miseensummaa: 200 ETB\n"
         "Galmaa'uuf button armaan gadii cuqaasi.",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-# ================= BUTTONS =================
+        reply_markup=InlineKeyboardMarkup(keyboard)# ================= BUTTONS =================
 
 async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -64,17 +85,20 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     if query.data == "register":
+
         context.user_data["step"] = "name"
 
         await query.edit_message_text(
             "📝 Maqaa kee barreessi:"
         )
 
+
     elif query.data.startswith("approve_"):
 
         user_id = query.data.split("_")[1]
 
         if str(user_id) in members:
+
             members[str(user_id)]["approved"] = True
             save_members(members)
 
@@ -86,6 +110,7 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=int(user_id),
                 text="🎉 Kaffaltiin kee mirkanaa'e. Baga miseensa taate!"
             )
+
 
     elif query.data.startswith("reject_"):
 
@@ -107,6 +132,7 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     step = context.user_data.get("step")
 
+
     if step == "name":
 
         context.user_data["name"] = update.message.text
@@ -115,6 +141,7 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "📱 Lakkoofsa bilbila kee barreessi:"
         )
+
 
     elif step == "phone":
 
@@ -136,7 +163,9 @@ async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.user_data.get("step") != "payment":
         return
 
+
     user_id = update.message.chat_id
+
 
     members[str(user_id)] = {
         "name": context.user_data.get("name"),
@@ -144,7 +173,9 @@ async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "approved": False
     }
 
+
     save_members(members)
+
 
     keyboard = [[
         InlineKeyboardButton(
@@ -157,20 +188,23 @@ async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     ]]
 
+
     await update.message.reply_text(
-        "✅ Receipt kee adminitti ergameera. Mee eegi."
+        "✅ Receipt kee ergameera. Mee eegi."
     )
+
 
     await context.bot.send_message(
         chat_id=ADMIN_ID,
         text=(
-            f"💰 Kaffaltii Haaraa\n\n"
+            "💰 Kaffaltii haaraa\n\n"
             f"🆔 ID: {user_id}\n"
             f"👤 Maqaa: {members[str(user_id)]['name']}\n"
             f"📱 Bilbila: {members[str(user_id)]['phone']}"
         ),
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
 
     await update.message.forward(ADMIN_ID)# ================= ADMIN COMMANDS =================
 
@@ -180,22 +214,26 @@ async def users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if not members:
-        await update.message.reply_text("👥 Miseensi hin jiru.")
+        await update.message.reply_text(
+            "👥 Miseensi hin jiru."
+        )
         return
 
-    text = f"👥 Miseensota Galmaa'an ({len(members)})\n\n"
+    text = f"👥 Miseensota ({len(members)})\n\n"
 
     for user_id, data in members.items():
-        status = "✅ Eeyyee" if data.get("approved") else "❌ Lakki"
+
+        status = "✅ Approved" if data.get("approved") else "⏳ Eegaa"
 
         text += (
-            f"🆔 {user_id}\n"
-            f"👤 {data['name']}\n"
-            f"📱 {data['phone']}\n"
-            f"✔️ Approved: {status}\n\n"
+            f"🆔 ID: {user_id}\n"
+            f"👤 Maqaa: {data['name']}\n"
+            f"📱 Bilbila: {data['phone']}\n"
+            f"{status}\n\n"
         )
 
     await update.message.reply_text(text)
+
 
 
 async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -212,9 +250,10 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         f"📊 Statistics\n\n"
-        f"Total Members: {total}\n"
-        f"Approved: {approved}"
+        f"👥 Total: {total}\n"
+        f"✅ Approved: {approved}"
     )
+
 
 
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -224,41 +263,70 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not context.args:
         await update.message.reply_text(
-            "Fakkeenya:\n/broadcast Akkam jirtu?"
+            "Fakkeenya:\n/broadcast Akkam jirtu miseensota"
         )
         return
 
     message = " ".join(context.args)
 
-    sent = 0
+    count = 0
 
     for user_id in members:
+
         try:
             await context.bot.send_message(
                 chat_id=int(user_id),
                 text=message
             )
-            sent += 1
+
+            count += 1
+
         except:
             pass
 
+
     await update.message.reply_text(
-        f"✅ Ergaan miseensa {sent}f ergame."
+        f"✅ Ergaan nama {count}f ergame."
     )
+
 
 
 # ================= MAIN =================
 
 def main():
 
-    app = Application.builder().token(BOT_TOKEN).build()
+    app = Application.builder().token(
+        BOT_TOKEN
+    ).build()
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("users", users))
-    app.add_handler(CommandHandler("stats", stats))
-    app.add_handler(CommandHandler("broadcast", broadcast))
 
-    app.add_handler(CallbackQueryHandler(buttons))
+    app.post_init = set_commands
+
+
+    app.add_handler(
+        CommandHandler("start", start)
+    )
+
+
+    app.add_handler(
+        CommandHandler("users", users)
+    )
+
+
+    app.add_handler(
+        CommandHandler("stats", stats)
+    )
+
+
+    app.add_handler(
+        CommandHandler("broadcast", broadcast)
+    )
+
+
+    app.add_handler(
+        CallbackQueryHandler(buttons)
+    )
+
 
     app.add_handler(
         MessageHandler(
@@ -267,6 +335,7 @@ def main():
         )
     )
 
+
     app.add_handler(
         MessageHandler(
             filters.PHOTO,
@@ -274,10 +343,14 @@ def main():
         )
     )
 
+
     print("✅ Bot running...")
+
 
     app.run_polling()
 
 
+
 if __name__ == "__main__":
     main()
+    )
