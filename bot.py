@@ -19,7 +19,7 @@ from telegram.ext import (
 
 # ================= CONFIG =================
 
-BOT_TOKEN = "TOKEN_KEE_AS_GALCHI"
+BOT_TOKEN = "8665819961:AAE1mzXAJVjBHJw52TY6T9lgseN6cdkOlrc"
 
 ADMIN_ID = 6836792869
 
