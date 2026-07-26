@@ -206,4 +206,75 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(
             chat_id=int(user_id),
             text="❌ Receipt keessan hin fudhatamne. Mee irra deebi'aa ergaa."
+        )# ================= REGISTRATION =================
+
+async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    step = context.user_data.get("step")
+
+    if step == "name":
+
+        context.user_data["name"] = update.message.text
+        context.user_data["step"] = "phone"
+
+        await update.message.reply_text(
+            "📱 Lakkoofsa bilbila kee barreessi:"
         )
+
+    elif step == "phone":
+
+        context.user_data["phone"] = update.message.text
+        context.user_data["step"] = "payment"
+
+        await update.message.reply_text(
+            f"💳 Kaffaltii: {PAYMENT_AMOUNT} ETB\n\n"
+            f"📲 Telebirr: {TELEBIRR}\n"
+            f"🏦 CBE: {CBE}\n\n"
+            "Erga kaffalte booda screenshot receipt ergi."
+        )
+
+
+# ================= RECEIPT =================
+
+async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if context.user_data.get("step") != "payment":
+        return
+
+    user_id = update.message.chat_id
+
+    members[str(user_id)] = {
+        "name": context.user_data.get("name"),
+        "phone": context.user_data.get("phone"),
+        "approved": False
+    }
+
+    save_members(members)
+
+    keyboard = [[
+        InlineKeyboardButton(
+            "✅ Approve",
+            callback_data=f"approve_{user_id}"
+        ),
+        InlineKeyboardButton(
+            "❌ Reject",
+            callback_data=f"reject_{user_id}"
+        )
+    ]]
+
+    await update.message.reply_text(
+        "✅ Receipt kee ergameera. Mee admin irraa mirkaneessa eegi."
+    )
+
+    await context.bot.send_message(
+        chat_id=ADMIN_ID,
+        text=(
+            "💰 Kaffaltii Haaraa\n\n"
+            f"🆔 ID: {user_id}\n"
+            f"👤 Maqaa: {members[str(user_id)]['name']}\n"
+            f"📱 Bilbila: {members[str(user_id)]['phone']}"
+        ),
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+    await update.message.forward(ADMIN_ID)
