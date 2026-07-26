@@ -277,4 +277,118 @@ async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-    await update.message.forward(ADMIN_ID)
+    await update.message.forward(ADMIN_ID)# ================= ADMIN COMMANDS =================
+
+async def users(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if update.message.chat_id != ADMIN_ID:
+        return
+
+    if not members:
+        await update.message.reply_text("👥 Miseensi hin jiru.")
+        return
+
+    text = f"👥 Miseensota ({len(members)})\n\n"
+
+    for user_id, data in members.items():
+
+        status = "✅ Approved" if data.get("approved") else "⏳ Pending"
+
+        text += (
+            f"🆔 {user_id}\n"
+            f"👤 {data['name']}\n"
+            f"📱 {data['phone']}\n"
+            f"{status}\n\n"
+        )
+
+    await update.message.reply_text(text)
+
+
+async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if update.message.chat_id != ADMIN_ID:
+        return
+
+    total = len(members)
+
+    approved = len(
+        [x for x in members.values() if x.get("approved")]
+    )
+
+    pending = total - approved
+
+    await update.message.reply_text(
+        f"📊 BIRE ONLINE IKUB\n\n"
+        f"👥 Total: {total}\n"
+        f"✅ Approved: {approved}\n"
+        f"⏳ Pending: {pending}"
+    )
+
+
+async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if update.message.chat_id != ADMIN_ID:
+        return
+
+    if not context.args:
+        await update.message.reply_text(
+            "Fakkeenya:\n/broadcast Baga nagaan dhuftan!"
+        )
+        return
+
+    message = " ".join(context.args)
+
+    count = 0
+
+    for user_id in members:
+
+        try:
+            await context.bot.send_message(
+                chat_id=int(user_id),
+                text=f"📢 BIRE ONLINE IKUB\n\n{message}"
+            )
+            count += 1
+        except:
+            pass
+
+    await update.message.reply_text(
+        f"✅ Ergaan miseensa {count}f ergame."
+    )
+
+
+# ================= MAIN =================
+
+def main():
+
+    app = Application.builder().token(BOT_TOKEN).build()
+
+    app.post_init = set_commands
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("users", users))
+    app.add_handler(CommandHandler("stats", stats))
+    app.add_handler(CommandHandler("broadcast", broadcast))
+
+    app.add_handler(CallbackQueryHandler(buttons))
+
+    app.add_handler(
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            text_handler
+        )
+    )
+
+    app.add_handler(
+        MessageHandler(
+            filters.PHOTO,
+            receipt
+        )
+    )
+
+    print("✅ BIRE ONLINE IKUB Bot Running...")
+
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
