@@ -138,4 +138,39 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Founder: Brother Biratu Dangia\n"
             "📞 0982485937\n"
             "📧 biredangiadida@gmail.com"
+        )# ================= REGISTRATION =================
+
+async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    step = context.user_data.get("step")
+
+    if step == "name":
+
+        context.user_data["name"] = update.message.text
+        context.user_data["step"] = "phone"
+
+        await update.message.reply_text(
+            "📱 Lakkoofsa bilbilaa kee barreessi:"
+        )
+
+    elif step == "phone":
+
+        user_id = str(update.message.chat_id)
+
+        members[user_id] = {
+            "name": context.user_data["name"],
+            "phone": update.message.text,
+            "approved": False
+        }
+
+        save_members(members)
+
+        context.user_data["step"] = "payment"
+
+        await update.message.reply_text(
+            f"✅ Galmeen kee galmaa'eera.\n\n"
+            f"💳 Kaffaltii: {PAYMENT_AMOUNT} ETB\n\n"
+            f"📲 Telebirr: {TELEBIRR}\n"
+            f"🏦 CBE: {CBE}\n\n"
+            "📤 Amma receipt kee ergi."
         )
