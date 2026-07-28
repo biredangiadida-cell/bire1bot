@@ -94,3 +94,48 @@ body{
     padding:25px;
     margin:20px auto;
 }
+# ================= BUTTONS =================
+
+async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "register":
+        context.user_data["step"] = "name"
+        await query.edit_message_text(
+            "📝 Maqaa guutuu kee barreessi:"
+        )
+
+    elif query.data == "courses":
+        await query.edit_message_text(
+            "📚 Koorsoota ELBS\n\n"
+            "📖 Jaalala Waaqayyoo\n"
+            "✝️ Fayyina fi Ayyaana\n"
+            "⚖️ Seeraa fi Firdii"
+        )
+
+    elif query.data == "payment":
+        context.user_data["step"] = "payment"
+
+        await query.edit_message_text(
+            f"💳 Kaffaltii Galmee\n\n"
+            f"💰 Qarshii: {PAYMENT_AMOUNT} ETB\n\n"
+            f"📲 Telebirr: {TELEBIRR}\n"
+            f"🏦 CBE: {CBE}\n\n"
+            "Kaffaltii booda receipt ergi."
+        )
+
+    elif query.data == "website":
+        await query.edit_message_text(
+            "🌐 Website ELBS\n\n"
+            "https://biredangiadida-cell.github.io/ELBS/"
+        )
+
+    elif query.data == "about":
+        await query.edit_message_text(
+            "🎓 Everlasting Love Bible School\n\n"
+            "Founder: Brother Biratu Dangia\n"
+            "📞 0982485937\n"
+            "📧 biredangiadida@gmail.com"
+        )
