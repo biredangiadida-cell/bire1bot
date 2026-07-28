@@ -327,7 +327,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         await query.edit_message_caption(
-            caption="✅ Galmeen kun APPROVED ta'eera."
+            caption="✅ Galmeen kun APPROVED ta'eera.")
         )
 
 
