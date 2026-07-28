@@ -81,7 +81,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
 
     await update.message.reply_text(
-        "🤖 BIRE ONLINE IKUB\n\n"
+        "🤖 Dirree Jaalala\n\n"
         "Baga nagaan dhuftan!\n\n"
         "Button keessaa tokko filadhaa.",
         reply_markup=InlineKeyboardMarkup(keyboard)
@@ -149,7 +149,7 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "news":
 
         await query.edit_message_text(
-            "📢 BIRE ONLINE IKUB\n\n"
+            "📢 Dirree Jaalala\n\n"
             "Beeksisni yeroo ammaa hin jiru.\n\n"
             "Beeksisni haaraan yeroo dhihoo keessatti ni maxxanfama."
         )
@@ -318,7 +318,7 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     pending = total - approved
 
     await update.message.reply_text(
-        f"📊 BIRE ONLINE IKUB\n\n"
+        f"📊 Dirree jaalala\n\n"
         f"👥 Total: {total}\n"
         f"✅ Approved: {approved}\n"
         f"⏳ Pending: {pending}"
@@ -345,7 +345,7 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             await context.bot.send_message(
                 chat_id=int(user_id),
-                text=f"📢 BIRE ONLINE IKUB\n\n{message}"
+                text=f"📢 Dirree jaalala\n\n{message}"
             )
             count += 1
         except:
