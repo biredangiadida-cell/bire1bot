@@ -251,14 +251,7 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-# ================= START REGISTRATION =================
 
-async def start_register(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    context.user_data["step"] = "name"
-
-    await update.callback_query.edit_message_text(
-        "📝 Maqaa guutuu kee barreessi:"
     )# ================= RECEIPT =================
 
 async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
