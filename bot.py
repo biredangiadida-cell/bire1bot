@@ -414,4 +414,75 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         f"✅ Ergaan namoota {sent} bira gahe."
+    )# ================= MAIN =================
+
+def main():
+
+    app = Application.builder().token(BOT_TOKEN).build()
+
+
+    # Commands
+    app.add_handler(
+        CommandHandler("start", start)
     )
+
+    app.add_handler(
+        CommandHandler("users", users)
+    )
+
+    app.add_handler(
+        CommandHandler("stats", stats)
+    )
+
+    app.add_handler(
+        CommandHandler("broadcast", broadcast)
+    )
+
+
+    # Buttons
+    app.add_handler(
+        CallbackQueryHandler(
+            start_register,
+            pattern="^register$"
+        )
+    )
+
+    app.add_handler(
+        CallbackQueryHandler(
+            buttons
+        )
+    )
+
+    app.add_handler(
+        CallbackQueryHandler(
+            approve,
+            pattern="^(approve_|reject_)"
+        )
+    )
+
+
+    # Messages
+    app.add_handler(
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            text_handler
+        )
+    )
+
+    app.add_handler(
+        MessageHandler(
+            filters.PHOTO,
+            receipt
+        )
+    )
+
+
+    print("✅ ELBS Bot Started...")
+
+
+    app.run_polling()
+
+
+
+if __name__ == "__main__":
+    main()
