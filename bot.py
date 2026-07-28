@@ -305,7 +305,7 @@ async def receipt_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-# ================= APPROVE / REJECT =================
+ # ================= APPROVE / REJECT =================
 
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -321,12 +321,10 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
             members[user_id]["approved"] = True
             save_members(members)
 
-
         await context.bot.send_message(
             chat_id=int(user_id),
-            text="🎉 Galmeen kee mirkanaa'eera."
+            text="🎉 Baga gammaddan! Galmeen keessan mirkanaa'eera."
         )
-
 
         await query.edit_message_caption(
             caption="✅ Galmeen kun APPROVED ta'eera."
@@ -337,12 +335,12 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await context.bot.send_message(
             chat_id=int(user_id),
-            text="❌ Receipt kee hin mirkanoofne."
+            text="❌ Galmeen keessan hin mirkanoofne. Mee receipt sirrii ergaa."
         )
-
 
         await query.edit_message_caption(
             caption="❌ Galmeen kun REJECTED ta'eera."
+        )
         )# ================= ADMIN =================
 
 async def users(update: Update, context: ContextTypes.DEFAULT_TYPE):
