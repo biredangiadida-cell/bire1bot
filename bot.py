@@ -210,8 +210,16 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             await query.edit_message_text(
                 "👤 Account hin jiru.\n"
-                "Mee dura galmaa'i."
-            )# ================= REGISTRATION =================
+                "Mee dura galmaa'i.")# ================= REGISTRATION =================
+
+async def start_register(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    context.user_data["step"] = "name"
+
+    await update.callback_query.edit_message_text(
+        "📝 Maqaa guutuu kee barreessi:"
+    )
+
 
 async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -248,23 +256,25 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📲 Telebirr: {TELEBIRR}\n"
             f"🏦 CBE: {CBE}\n\n"
             "📤 Amma receipt kee ergi."
-        )
-
-
-
-    # ================= RECEIPT =================
+        )# ================= RECEIPT =================
 
 async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    context.user_data["step"] = "receipt"
+    context.user_data["step"] = "payment"
 
-await update.callback_query.edit_message_text(
-    "📤 Mee receipt kaffaltii kee as ergi."
-)
+    await update.callback_query.edit_message_text(
+        "📤 Mee receipt kaffaltii kee (suuraa) as ergi."
+    )
 
 
-    user_id = update.message.chat_id
+# ================= RECEIVE RECEIPT PHOTO =================
 
+async def receipt_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if context.user_data.get("step") != "payment":
+        return
+
+    user_id = str(update.message.chat_id)
 
     keyboard = [
         [
@@ -279,25 +289,20 @@ await update.callback_query.edit_message_text(
         ]
     ]
 
-
     await update.message.reply_text(
         "✅ Receipt kee fudhanneerra.\n"
         "Mee admin irraa mirkaneessa eegi."
     )
-
 
     await context.bot.send_photo(
         chat_id=ADMIN_ID,
         photo=update.message.photo[-1].file_id,
         caption=(
             "💳 Kaffaltii Haaraa\n\n"
-            f"👤 Maqaa: {members[str(user_id)]['name']}\n"
-            f"📱 Bilbila: {members[str(user_id)]['phone']}\n"
-            f"🆔 ID: {user_id}"
+            f"👤 ID: {user_id}"
         ),
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
 
 
 # ================= APPROVE / REJECT =================
@@ -307,19 +312,19 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-
     user_id = query.data.split("_")[1]
 
 
     if query.data.startswith("approve_"):
 
-        members[user_id]["approved"] = True
-        save_members(members)
+        if user_id in members:
+            members[user_id]["approved"] = True
+            save_members(members)
 
 
         await context.bot.send_message(
             chat_id=int(user_id),
-            text="🎉 Baga gammaddan! Galmeen keessan mirkanaa'eera."
+            text="🎉 Galmeen kee mirkanaa'eera."
         )
 
 
@@ -330,163 +335,12 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif query.data.startswith("reject_"):
 
-
         await context.bot.send_message(
             chat_id=int(user_id),
-            text="❌ Galmeen keessan hin mirkanoofne. Mee receipt sirrii ergaa."
+            text="❌ Receipt kee hin mirkanoofne."
         )
 
 
         await query.edit_message_caption(
             caption="❌ Galmeen kun REJECTED ta'eera."
-        )# ================= ADMIN =================
-
-async def users(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    if update.effective_user.id != ADMIN_ID:
-        return
-
-    await update.message.reply_text(
-        f"👥 Members: {len(members)}"
-    )
-
-
-
-async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    if update.effective_user.id != ADMIN_ID:
-        return
-
-
-    approved = sum(
-        1 for m in members.values()
-        if m.get("approved")
-    )
-
-
-    await update.message.reply_text(
-        f"📊 Statistics\n\n"
-        f"👥 Total: {len(members)}\n"
-        f"✅ Approved: {approved}"
-    )
-
-
-
-async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    if update.effective_user.id != ADMIN_ID:
-        return
-
-
-    if not context.args:
-
-        await update.message.reply_text(
-            "Fayyadami:\n/broadcast Ergaa kee"
         )
-
-        return
-
-
-    text = " ".join(context.args)
-
-    sent = 0
-
-
-    for uid in members:
-
-        try:
-
-            await context.bot.send_message(
-                chat_id=int(uid),
-                text=text
-            )
-
-            sent += 1
-
-        except:
-            pass
-
-
-
-    await update.message.reply_text(
-        f"✅ Ergaan namoota {sent} bira gahe."
-    )# ================= MAIN =================
-
-def main():
-
-    app = Application.builder().token(BOT_TOKEN).build()
-
-
-    # Commands
-    app.add_handler(
-        CommandHandler("start", start)
-    )
-
-    app.add_handler(
-        CommandHandler("users", users)
-    )
-
-    app.add_handler(
-        CommandHandler("stats", stats)
-    )
-
-    app.add_handler(
-        CommandHandler("broadcast", broadcast)
-    )
-
-
-    # Buttons
-    app.add_handler(
-        CallbackQueryHandler(
-            start_register,
-            pattern="^register$"
-        )
-    )
-
-    app.add_handler(
-        CallbackQueryHandler(
-            buttons
-        )
-    )
-
-    app.add_handler(
-        CallbackQueryHandler(
-            approve,
-            pattern="^(approve_|reject_)"
-        )
-    )
-
-
-   # Messages
-    app.add_handler(
-        MessageHandler(
-            filters.TEXT & ~filters.COMMAND,
-            text_handler
-        )app.add_handler(
-    MessageHandler(
-        filters.PHOTO,
-        receipt_handler
-    )
-)
-    )
-
-    # Buttons
-    app.add_handler(
-        CallbackQueryHandler(buttons)
-    )
-
-    # Admin approve/reject
-    app.add_handler(
-        CallbackQueryHandler(
-            approve,
-            pattern="^(approve_|reject_)"
-        )
-    )
-
-    print("✅ ELBS Bot Started...")
-
-    app.run_polling()
-
-
-if __name__ == "__main__":
-    main()
