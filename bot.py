@@ -303,9 +303,7 @@ async def receipt_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ),
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
-
- # ================= APPROVE / REJECT =================
+# ================= APPROVE / REJECT =================
 
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -327,7 +325,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         await query.edit_message_caption(
-            caption="✅ Galmeen kun APPROVED ta'eera.")
+            caption="✅ Galmeen kun APPROVED ta'eera."
         )
 
 
@@ -341,7 +339,9 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_caption(
             caption="❌ Galmeen kun REJECTED ta'eera."
         )
-        # ================= ADMIN =================
+
+
+# ================= ADMIN =================
 
 async def users(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -392,7 +392,6 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=int(uid),
                 text=text
             )
-
             sent += 1
 
         except:
@@ -404,78 +403,5 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-# ================= MAIN =================
-
-def main():
-
-    app = Application.builder().token(BOT_TOKEN).build()
 
 
-    # Commands
-    app.add_handler(
-        CommandHandler("start", start)
-    )
-
-    app.add_handler(
-        CommandHandler("users", users)
-    )
-
-    app.add_handler(
-        CommandHandler("stats", stats)
-    )
-
-    app.add_handler(
-        CommandHandler("broadcast", broadcast)
-    )
-
-
-    # Register Button
-    app.add_handler(
-        CallbackQueryHandler(
-            start_register,
-            pattern="^register$"
-        )
-    )
-
-
-    # Other Buttons
-    app.add_handler(
-        CallbackQueryHandler(buttons)
-    )
-
-
-    # Approve / Reject
-    app.add_handler(
-        CallbackQueryHandler(
-            approve,
-            pattern="^(approve_|reject_)"
-        )
-    )
-
-
-    # Text Messages
-    app.add_handler(
-        MessageHandler(
-            filters.TEXT & ~filters.COMMAND,
-            text_handler
-        )
-    )
-
-
-    # Receipt Photo
-    app.add_handler(
-        MessageHandler(
-            filters.PHOTO,
-            receipt_handler
-        )
-    )
-
-
-    print("✅ ELBS Bot Started...")
-
-
-    app.run_polling()
-
-
-if __name__ == "__main__":
-    main()
