@@ -341,7 +341,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_caption(
             caption="❌ Galmeen kun REJECTED ta'eera."
         )
-        )# ================= ADMIN =================
+        # ================= ADMIN =================
 
 async def users(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
