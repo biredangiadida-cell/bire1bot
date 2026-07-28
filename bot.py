@@ -263,8 +263,11 @@ async def start_register(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    if context.user_data.get("step") != "payment":
-        return
+    context.user_data["step"] = "receipt"
+
+await update.callback_query.edit_message_text(
+    "📤 Mee receipt kaffaltii kee as ergi."
+)
 
 
     user_id = update.message.chat_id
