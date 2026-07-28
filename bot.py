@@ -54,4 +54,43 @@ async def set_commands(app):
         BotCommand("broadcast", "Broadcast")
     ]
 
-    await app.bot.set_my_commands(commands)
+    await app.bot.set_my_commands(commands)*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    line-height:1.6;
+}
+
+.hero{
+    background:url("church.jpg") center/cover no-repeat;
+    color:white;
+    padding:120px 20px;
+    text-align:center;
+}
+
+.button{
+    display:inline-block;
+    margin-top:20px;
+    background:#0b5ed7;
+    color:white;
+    padding:15px 30px;
+    border-radius:30px;
+    transition:.3s;
+}
+
+.button:hover{
+    background:#084298;
+    transform:scale(1.05);
+}
+
+.card{
+    background:white;
+    border-radius:12px;
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+    padding:25px;
+    margin:20px auto;
+}
