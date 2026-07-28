@@ -252,7 +252,7 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-    )# ================= RECEIPT =================
+    # ================= RECEIPT =================
 
 async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -462,7 +462,12 @@ def main():
         MessageHandler(
             filters.TEXT & ~filters.COMMAND,
             text_handler
-        )
+        )app.add_handler(
+    MessageHandler(
+        filters.PHOTO,
+        receipt_handler
+    )
+)
     )
 
     # Buttons
