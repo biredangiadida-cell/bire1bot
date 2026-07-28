@@ -461,30 +461,30 @@ def main():
     )
 
 
-    # Messages
+   # Messages
     app.add_handler(
         MessageHandler(
             filters.TEXT & ~filters.COMMAND,
             text_handler
         )
-    )app.add_handler(
-    CallbackQueryHandler(buttons)
-)
-
-app.add_handler(
-    CallbackQueryHandler(
-        approve,
-        pattern="^(approve_|reject_)"
-    )
-)
     )
 
+    # Buttons
+    app.add_handler(
+        CallbackQueryHandler(buttons)
+    )
+
+    # Admin approve/reject
+    app.add_handler(
+        CallbackQueryHandler(
+            approve,
+            pattern="^(approve_|reject_)"
+        )
+    )
 
     print("✅ ELBS Bot Started...")
 
-
     app.run_polling()
-
 
 
 if __name__ == "__main__":
