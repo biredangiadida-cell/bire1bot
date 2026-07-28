@@ -259,4 +259,88 @@ async def start_register(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.callback_query.edit_message_text(
         "📝 Maqaa guutuu kee barreessi:"
+    )# ================= RECEIPT =================
+
+async def receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if context.user_data.get("step") != "payment":
+        return
+
+
+    user_id = update.message.chat_id
+
+
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "✅ Approve",
+                callback_data=f"approve_{user_id}"
+            ),
+            InlineKeyboardButton(
+                "❌ Reject",
+                callback_data=f"reject_{user_id}"
+            )
+        ]
+    ]
+
+
+    await update.message.reply_text(
+        "✅ Receipt kee fudhanneerra.\n"
+        "Mee admin irraa mirkaneessa eegi."
     )
+
+
+    await context.bot.send_photo(
+        chat_id=ADMIN_ID,
+        photo=update.message.photo[-1].file_id,
+        caption=(
+            "💳 Kaffaltii Haaraa\n\n"
+            f"👤 Maqaa: {members[str(user_id)]['name']}\n"
+            f"📱 Bilbila: {members[str(user_id)]['phone']}\n"
+            f"🆔 ID: {user_id}"
+        ),
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+
+
+# ================= APPROVE / REJECT =================
+
+async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    query = update.callback_query
+    await query.answer()
+
+
+    user_id = query.data.split("_")[1]
+
+
+    if query.data.startswith("approve_"):
+
+        members[user_id]["approved"] = True
+        save_members(members)
+
+
+        await context.bot.send_message(
+            chat_id=int(user_id),
+            text="🎉 Baga gammaddan! Galmeen keessan mirkanaa'eera."
+        )
+
+
+        await query.edit_message_caption(
+            caption="✅ Galmeen kun APPROVED ta'eera."
+        )
+
+
+    elif query.data.startswith("reject_"):
+
+
+        await context.bot.send_message(
+            chat_id=int(user_id),
+            text="❌ Galmeen keessan hin mirkanoofne. Mee receipt sirrii ergaa."
+        )
+
+
+        await query.edit_message_caption(
+            caption="❌ Galmeen kun REJECTED ta'eera."
+        )
