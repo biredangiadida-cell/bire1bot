@@ -343,4 +343,141 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await query.edit_message_caption(
             caption="❌ Galmeen kun REJECTED ta'eera."
+        )# ================= ADMIN =================
+
+async def users(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if update.effective_user.id != ADMIN_ID:
+        return
+
+    await update.message.reply_text(
+        f"👥 Members: {len(members)}"
+    )
+
+
+async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if update.effective_user.id != ADMIN_ID:
+        return
+
+    approved = sum(
+        1 for m in members.values()
+        if m.get("approved")
+    )
+
+    await update.message.reply_text(
+        f"📊 Statistics\n\n"
+        f"👥 Total: {len(members)}\n"
+        f"✅ Approved: {approved}"
+    )
+
+
+async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if update.effective_user.id != ADMIN_ID:
+        return
+
+    if not context.args:
+        await update.message.reply_text(
+            "Fayyadami:\n/broadcast Ergaa kee"
         )
+        return
+
+    text = " ".join(context.args)
+
+    sent = 0
+
+    for uid in members:
+
+        try:
+            await context.bot.send_message(
+                chat_id=int(uid),
+                text=text
+            )
+
+            sent += 1
+
+        except:
+            pass
+
+
+    await update.message.reply_text(
+        f"✅ Ergaan namoota {sent} bira gahe."
+    )
+
+
+# ================= MAIN =================
+
+def main():
+
+    app = Application.builder().token(BOT_TOKEN).build()
+
+
+    # Commands
+    app.add_handler(
+        CommandHandler("start", start)
+    )
+
+    app.add_handler(
+        CommandHandler("users", users)
+    )
+
+    app.add_handler(
+        CommandHandler("stats", stats)
+    )
+
+    app.add_handler(
+        CommandHandler("broadcast", broadcast)
+    )
+
+
+    # Register Button
+    app.add_handler(
+        CallbackQueryHandler(
+            start_register,
+            pattern="^register$"
+        )
+    )
+
+
+    # Other Buttons
+    app.add_handler(
+        CallbackQueryHandler(buttons)
+    )
+
+
+    # Approve / Reject
+    app.add_handler(
+        CallbackQueryHandler(
+            approve,
+            pattern="^(approve_|reject_)"
+        )
+    )
+
+
+    # Text Messages
+    app.add_handler(
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            text_handler
+        )
+    )
+
+
+    # Receipt Photo
+    app.add_handler(
+        MessageHandler(
+            filters.PHOTO,
+            receipt_handler
+        )
+    )
+
+
+    print("✅ ELBS Bot Started...")
+
+
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
