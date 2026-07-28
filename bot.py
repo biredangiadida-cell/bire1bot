@@ -21,7 +21,7 @@ from telegram.ext import (
 
 # ================= TOKEN =================
 
-BOT_TOKEN = "TOKEN_KEE_AS_GALCHI"
+BOT_TOKEN = "8665819961:AAGMdh4iPagsM60nSBpjqX2n-rauoKvz1Bo"
 
 
 # ================= ADMIN =================
