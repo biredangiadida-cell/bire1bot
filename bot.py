@@ -467,13 +467,16 @@ def main():
             filters.TEXT & ~filters.COMMAND,
             text_handler
         )
-    )
+    )app.add_handler(
+    CallbackQueryHandler(buttons)
+)
 
-    app.add_handler(
-        MessageHandler(
-            filters.PHOTO,
-            receipt
-        )
+app.add_handler(
+    CallbackQueryHandler(
+        approve,
+        pattern="^(approve_|reject_)"
+    )
+)
     )
 
 
