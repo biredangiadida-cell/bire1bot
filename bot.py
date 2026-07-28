@@ -445,18 +445,18 @@ def main():
     )
 
 
-    # Other Buttons
-    app.add_handler(
-        CallbackQueryHandler(buttons)
-    )
-
-
     # Approve / Reject
     app.add_handler(
         CallbackQueryHandler(
             approve,
             pattern="^(approve_|reject_)"
         )
+    )
+
+
+    # Other Buttons
+    app.add_handler(
+        CallbackQueryHandler(buttons)
     )
 
 
@@ -486,7 +486,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
