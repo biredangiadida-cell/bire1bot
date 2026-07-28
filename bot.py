@@ -119,4 +119,96 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "👇 Tajaajila barbaaddan keessaa tokko filadhaa.",
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="Markdown"
-    )
+    )# ================= BUTTONS =================
+
+async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    query = update.callback_query
+    await query.answer()
+
+
+    if query.data == "courses":
+
+        await query.edit_message_text(
+            "📚 Koorsoota ELBS\n\n"
+            "📖 Jaalala Waaqayyoo\n"
+            "✝️ Fayyina fi Ayyaana\n"
+            "⚖️ Seeraa fi Firdii"
+        )
+
+
+    elif query.data == "payment":
+
+        context.user_data["step"] = "payment"
+
+        await query.edit_message_text(
+            f"💳 Kaffaltii Galmee\n\n"
+            f"💰 Qarshii: {PAYMENT_AMOUNT} ETB\n\n"
+            f"📲 Telebirr: {TELEBIRR}\n"
+            f"🏦 CBE: {CBE}\n\n"
+            "📤 Kaffaltii booda receipt kee ergi."
+        )
+
+
+    elif query.data == "website":
+
+        await query.edit_message_text(
+            "🌐 Website ELBS\n\n"
+            "https://biredangiadida-cell.github.io/ELBS/"
+        )
+
+
+    elif query.data == "about":
+
+        await query.edit_message_text(
+            "🎓 Everlasting Love Bible School\n\n"
+            "Founder: Brother Biratu Dangia\n"
+            "📞 0982485937\n"
+            "📧 biredangiadida@gmail.com"
+        )
+
+
+    elif query.data == "contact":
+
+        await query.edit_message_text(
+            "📞 Nu Qunnamaa\n\n"
+            "Bilbila: 0982485937"
+        )
+
+
+    elif query.data == "help":
+
+        await query.edit_message_text(
+            "❓ Gargaarsa\n\n"
+            "Rakkoo yoo qabaatte nu qunnami."
+        )
+
+
+    elif query.data == "news":
+
+        await query.edit_message_text(
+            "📢 Beeksisa\n\n"
+            "Beeksisni haaraan as irratti maxxanfama."
+        )
+
+
+    elif query.data == "account":
+
+        user_id = str(query.from_user.id)
+
+        if user_id in members:
+            user = members[user_id]
+
+            await query.edit_message_text(
+                "👤 Account Koo\n\n"
+                f"📝 Maqaa: {user['name']}\n"
+                f"📱 Bilbila: {user['phone']}\n"
+                f"✅ Haala: {'Mirkanaaʼeera' if user['approved'] else 'Hin mirkanoofne'}"
+            )
+
+        else:
+
+            await query.edit_message_text(
+                "👤 Account hin jiru.\n"
+                "Mee dura galmaa'i."
+            )
